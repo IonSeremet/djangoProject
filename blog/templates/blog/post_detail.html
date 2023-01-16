@@ -15,6 +15,37 @@
       </div>
       <h2 class="article-title">{{ object.title }}</h2>
       <p class="article-content">{{ object.content }}</p>
+      <br>
+            <hr>
+          <h6>Comments...</h6>
+
+          {% if not post.comments.all %}
+            No Comments Yet... <a href="{% url 'add_comment' post.pk %}">
+              Add One
+          </a>
+          {% else %}
+
+              <a href="{% url 'add_comment' post.pk %}">Add Comment</a>
+
+              <br><br>
+            {% for comment in post.comments.all %}
+              <strong>{{ comment.name }} -
+              {{ comment.date_added }}
+              </strong>
+              <br>
+              {{ comment.body }}
+                <br>
+            {% endfor %}
+                              <hr>
+
+          {% endif %}
+{#  <div>#}
+{#      <form action = "{% url 'like_post' post.pk %}" method="post">#}
+{#            {% csrf_token %}#}
+{#          <button type="submit", name="post_id", value = "{{ post.id }}", class = "btn btn-primary btn-sm">Like</button>#}
+{#      </form>#}
+{#  </div>#}
     </div>
+
   </article>
 {% endblock content %}

@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.views.generic import (
@@ -8,8 +8,11 @@ from django.views.generic import (
     UpdateView,
     DeleteView
 )
-from .models import Post
 
+from users.forms import CommentForm
+from .models import Post, Category, Comment
+from django.urls import reverse_lazy, reverse
+from django.http import HttpResponseRedirect
 
 def home(request):
     context = {
@@ -25,6 +28,13 @@ class PostListView(ListView):
     ordering = ['-date_posted']
     paginate_by = 5
 
+    # def get_context_data(self, *args, **kwargs):
+    # #     cat_menu = Category.objects.all()
+    #     context = super(PostListView,self).get_context_data(*args, **kwargs)
+    #     stuff = get_object_or_404(Post, id=self.kwargs['pk'])
+    #     total_likes = stuff.total_likes()
+    #     context["total_likes"] = total_likes
+    #     return context
 
 class UserPostListView(ListView):
     model = Post
@@ -41,10 +51,13 @@ class PostDetailView(DetailView):
     model = Post
 
 
+
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
-    fields = ['title', 'content']
-
+    fields = ['title', 'content', 'category']
+    # widgets = {
+    #     'category' : Post.Select(attrs={'class':'post-control'})
+    # }
     def form_valid(self, form):
         form.instance.author = self.request.user
         return super().form_valid(form)
@@ -78,3 +91,30 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 def about(request):
     return render(request, 'blog/about.html', {'title': 'About'})
+
+
+def LikeView(request,pk):
+    post = get_object_or_404(Post, id = request.POST.get('post_id'))
+    liked = False
+    if post.likes.filter(id=request.user.id).exists():
+        post.likes.remove(request.user)
+        liked=False
+    else:
+        post.likes.add(request.user)
+        liked = True
+    # return HttpResponseRedirect(reverse('post-detail', args = [str(pk)]))
+    return redirect('/')
+
+def CategoryView(request, cats):
+    category_posts = Post.objects.filter(category=cats)
+    return render(request, 'blog/categories.html', {'cats':cats,'category_posts':category_posts})
+
+class AddCommentView(CreateView):
+    model = Comment
+    form_class = CommentForm
+    template_name = 'blog/add_comment.html'
+    # fields = '__all__'
+    success_url = reverse_lazy('blog-home')
+    def form_valid(self, form):
+        form.instance.post_id = self.kwargs['pk']
+        return super().form_valid(form)

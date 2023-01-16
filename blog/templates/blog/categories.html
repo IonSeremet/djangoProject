@@ -1,32 +1,16 @@
 {% extends "blog/base.html" %}
 {% block content %}
-    {% for post in posts %}
+    <h1 class="mb-3">Category: {{ cats }}</h1>
+    {% for post in category_posts %}
         <article class="media content-section">
-
           <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
           <div class="media-body">
             <div class="article-metadata">
               <a class="mr-2" href="{% url 'user-posts' post.author.username %}">{{ post.author }}</a>
               <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
-                <a href="{% url 'category' post.category %}"> <small class="text-muted" style="text-align: left" >{{ post.category }}</small></a>
-
             </div>
             <h2><a class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
-
-              <p class="article-content">{{ post.content }} </p>
-            {% if user.is_authenticated %}
-              <div >
-                  <form action = "{% url 'like_post' post.pk %}" method="post">
-                        {% csrf_token %}
-{#                      <button type="submit", name="post_id", value = "{{ post.id }}", class = "btn btn-primary btn-sm"></button> #}
-                   <button type="submit" name="post_id" value="{{ post.id }}" class="btn {% if user in post.likes.all %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm"><i class="fa-solid fa-heart"></i></button>&nbsp;&nbsp;{{ post.likes.count }}
-                  </form>
-              </div>
-            {% else %}
-                <small><a href="{% url 'login' %}">Login</a> to like</small>
-            {% endif %}
-
-
+            <p class="article-content">{{ post.content }}</p>
           </div>
         </article>
     {% endfor %}

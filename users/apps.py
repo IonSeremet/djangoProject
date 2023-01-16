@@ -1,8 +1,10 @@
+
+
 from django.apps import AppConfig
 
 
 class UsersConfig(AppConfig):
     name = 'users'
 
-    def readu(self):
+    def ready(self):
         import users.signals
